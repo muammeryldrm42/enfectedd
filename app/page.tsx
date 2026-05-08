@@ -44,6 +44,11 @@ export default function Home() {
       groups[definition.category] = [...(groups[definition.category] ?? []), definition];
       return groups;
     }, { Transmission: [], Symptoms: [], Resistance: [] });
+  const definitionsByCategory = useMemo(() => {
+    return UPGRADE_DEFINITIONS.reduce<Record<string, UpgradeDefinition[]>>((groups, definition) => {
+      groups[definition.category] = [...(groups[definition.category] ?? []), definition];
+      return groups;
+    }, {});
   }, []);
 
   const buyUpgrade = (id: UpgradeId) => {
@@ -65,6 +70,7 @@ export default function Home() {
     <main className="shell">
       <aside className={`upgrade-drawer ${upgradesOpen ? "open" : ""}`}>
         <button className="drawer-toggle" onClick={() => setUpgradesOpen((open: boolean) => !open)}>
+        <button className="drawer-toggle" onClick={() => setUpgradesOpen((open) => !open)}>
           {upgradesOpen ? "Hide evolution" : "Evolve virus"}
         </button>
         <div className="drawer-content">
@@ -78,6 +84,10 @@ export default function Home() {
             <section className="upgrade-group" key={category}>
               <h2>{category}</h2>
               {definitionsByCategory[category].map((definition: UpgradeDefinition) => {
+          {Object.entries(definitionsByCategory).map(([category, definitions]) => (
+            <section className="upgrade-group" key={category}>
+              <h2>{category}</h2>
+              {definitions.map((definition) => {
                 const level = snapshot.upgrades[definition.id];
                 const cost = engineRef.current!.getUpgradeCost(definition.id);
                 const maxed = level >= definition.maxLevel;
