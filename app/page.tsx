@@ -7,6 +7,8 @@ import type { AlienChoice, GameSnapshot, UpgradeDefinition, UpgradeId } from "@/
 
 const formatter = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 const percent = (value: number) => `${(value * 100).toFixed(value < 0.1 ? 2 : 1)}%`;
+type UpgradeCategory = UpgradeDefinition["category"];
+const UPGRADE_CATEGORIES: UpgradeCategory[] = ["Transmission", "Symptoms", "Resistance"];
 
 export default function Home() {
   const engineRef = useRef<HantaGameEngine>();
@@ -37,6 +39,11 @@ export default function Home() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  const definitionsByCategory = useMemo<Record<UpgradeCategory, UpgradeDefinition[]>>(() => {
+    return UPGRADE_DEFINITIONS.reduce<Record<UpgradeCategory, UpgradeDefinition[]>>((groups, definition) => {
+      groups[definition.category] = [...(groups[definition.category] ?? []), definition];
+      return groups;
+    }, { Transmission: [], Symptoms: [], Resistance: [] });
   const definitionsByCategory = useMemo(() => {
     return UPGRADE_DEFINITIONS.reduce<Record<string, UpgradeDefinition[]>>((groups, definition) => {
       groups[definition.category] = [...(groups[definition.category] ?? []), definition];
@@ -62,6 +69,7 @@ export default function Home() {
   return (
     <main className="shell">
       <aside className={`upgrade-drawer ${upgradesOpen ? "open" : ""}`}>
+        <button className="drawer-toggle" onClick={() => setUpgradesOpen((open: boolean) => !open)}>
         <button className="drawer-toggle" onClick={() => setUpgradesOpen((open) => !open)}>
           {upgradesOpen ? "Hide evolution" : "Evolve virus"}
         </button>
@@ -72,6 +80,10 @@ export default function Home() {
             <small>Earned from exponential infection spread</small>
           </div>
 
+          {UPGRADE_CATEGORIES.map((category) => (
+            <section className="upgrade-group" key={category}>
+              <h2>{category}</h2>
+              {definitionsByCategory[category].map((definition: UpgradeDefinition) => {
           {Object.entries(definitionsByCategory).map(([category, definitions]) => (
             <section className="upgrade-group" key={category}>
               <h2>{category}</h2>
